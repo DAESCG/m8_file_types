@@ -22,12 +22,12 @@ was provided.
 
 Contents
 --------
-1. `README.md`                  | Master README file
-2. `BigDataSupplemental.pdf`    | An overview of data formats, including GRIB and NetCDF
-3. `examples/places.json`       | A GeoJSON file containing populated place names/coordinates
-4. `examples/sub_units.json`    | A GeoJSON file containing sub domain information
-5. `examples/uk.json`           | A GeoJSON file containing UK topological data
-6. `examples/uk_map.html`       | An HTML file that joins GeoJSON data with the d3 JS library.
+1. `README.md`                      | Master README file
+2. `BigDataSupplemental.pdf`        | An overview of data formats, including GRIB and NetCDF
+3. `examples/data/places.json`      | A GeoJSON file containing populated place names/coordinates
+4. `examples/data/sub_units.json`   | A GeoJSON file containing sub domain information
+5. `examples/data/uk.json`          | A GeoJSON file containing UK topological data
+6. `examples/src/uk_map.html`       | An HTML file that joins GeoJSON data with the d3 JS library.
 
 Useful Links
 ------------
