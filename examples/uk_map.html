@@ -9,23 +9,34 @@
     .subunit.IRL { fill: #fff; }
 
     .subunit-boundary {
-      fill: none;
-      stroke: #777;
-      stroke-dasharray: 2,2;
-      stroke-linejoin: round;
+        fill: none;
+        stroke: #777;
+        stroke-dasharray: 2,2;
+        stroke-linejoin: round;
     }
 
     .subunit-boundary.IRL {
-      fill: none;
-      stroke: #aaa;
+        fill: none;
+        stroke: #aaa;
+    }
+
+    .place,
+    .place-label {
+        fill: #444;
     }
 
     .subunit-label {
-      fill: #777;
-      fill-opacity: .5;
-      font-size: 20px;
-      font-weight: 300;
-      text-anchor: middle;
+        fill: #777;
+        fill-opacity: .5;
+        font-size: 16px;
+        font-weight: 300;
+        text-anchor: middle;
+    }
+
+    text {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 10px;
+        pointer-events: none;
     }
 
 
@@ -35,6 +46,8 @@
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
 
+    // Use SVG to render 2-d geometry in a browser
+    // Create an SVG root element
     var width = 960,
         height = 1160;
 
@@ -42,10 +55,18 @@
         .attr("width", width)
         .attr("height", height);
 
+    // Load topojson data
+    // Load function takes error and data arguments
     d3.json("./uk.json", function(error, uk) {
+
         if (error) return console.error(error);
 
+        // Sub-domains
+        // The four constituent countries of the UK
+        // England, Wales, Scotland, Northern Ireland
         var subunits = topojson.feature(uk, uk.objects.subunits);
+
+        // Set map projection
         var projection = d3.geo.albers()
             .center([0, 55.4])
             .rotate([4.4, 0])
@@ -53,46 +74,61 @@
             .scale(6000)
             .translate([width / 2, height / 2]);
 
+        // Create geographic path generator with above projection
         var path = d3.geo.path()
-            .projection(projection);
+            .projection(projection)
+            .pointRadius(2);
 
+        // Bind path element to data and set "d" attribute to path data
         svg.append("path")
             .datum(subunits)
             .attr("d", path);
 
+        // Create path elements for each feature
+        // Admin-0 map units in uk.json are represented as a feature collection
+        // Generating distinct path elements allows for distinct color assignments
         svg.selectAll(".subunit")
             .data(topojson.feature(uk, uk.objects.subunits).features)
           .enter().append("path")
             .attr("class", function(d) { return "subunit " + d.id; })
             .attr("d", path);
 
+        // Create boundary lines between England and Scotland/Wales
+        // topojson.mesh requires topology and constituent geometry objects as arguments
+        // a & b represent features on either side of the boundaries, thus acting as filters
+        // a !== b yields interior boundaries, while a === b yields exterior boundaries
         svg.append("path")
             .datum(topojson.mesh(uk, uk.objects.subunits, function(a, b) { return a !== b && a.id !== "IRL"; }))
             .attr("d", path)
             .attr("class", "subunit-boundary");
 
+        // Create Irish coastline
         svg.append("path")
             .datum(topojson.mesh(uk, uk.objects.subunits, function(a, b) { return a === b && a.id === "IRL"; }))
             .attr("d", path)
             .attr("class", "subunit-boundary IRL");
 
+        // Use geographic path generator to render populated places, which are a feature collection
+        // Draws a small circle for each city
         svg.append("path")
             .datum(topojson.feature(uk, uk.objects.places))
             .attr("d", path)
             .attr("class", "place");
 
+        // Place labels
+        // Translate labels into desired positions by computing the transform property
+        // Left-align labels on right side of map, and right-align on left side
         svg.selectAll(".place-label")
             .data(topojson.feature(uk, uk.objects.places).features)
           .enter().append("text")
             .attr("class", "place-label")
             .attr("transform", function(d) { return "translate(" + projection(d.geometry.coordinates) + ")"; })
-            .attr("dy", ".35em")
+            .attr("x", function(d) { return d.geometry.coordinates[0] > -1 ? 6 : -6; })
+            .attr("dy", ".15em")
+            .style("text-anchor", function(d) { return d.geometry.coordinates[0] > -1 ? "start" : "end"; })
             .text(function(d) { return d.properties.name; });
 
-        svg.selectAll(".place-label")
-            .attr("x", function(d) { return d.geometry.coordinates[0] > -1 ? 6 : -6; })
-            .style("text-anchor", function(d) { return d.geometry.coordinates[0] > -1 ? "start" : "end"; });
-
+        // Create country labels
         svg.selectAll(".subunit-label")
             .data(topojson.feature(uk, uk.objects.subunits).features)
           .enter().append("text")
@@ -104,3 +140,4 @@
     });
 
 </script>
+</body>
